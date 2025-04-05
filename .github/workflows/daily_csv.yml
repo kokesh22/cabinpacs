@@ -1,0 +1,40 @@
+name: Daily CSV generation
+
+# 1) Programar el workflow para que se ejecute automáticamente todos los días.
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Se ejecutará todos los días a las 00:00 UTC
+  # (Opcional) También puedes habilitarlo para que se ejecute manualmente:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # 2) Check out el contenido del repositorio
+      - uses: actions/checkout@v2
+
+      # 3) Configurar Python
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      # 4) Instalar pandas
+      - name: Install dependencies
+        run: |
+          pip install pandas
+
+      # 5) Ejecutar el script de Python
+      - name: Run Python script
+        run: |
+          python main.py
+
+      # 6) Commitear y pushear el nuevo CSV (output.csv) al repositorio
+      - name: Commit CSV
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add output.csv
+          git commit -m "Update CSV (cron job) [skip ci]" || echo "No changes to commit"
+          git push
